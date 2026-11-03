@@ -98,6 +98,98 @@ contactForm?.addEventListener('submit', async (e) => {
   showToast('Mensaje guardado localmente');
 });
 
+// --- Admin / login ---
+const ADMIN_USER = 'admin';
+const ADMIN_PASS = 'laventrix123';
+const SESSION_KEY = 'laventrix_session';
+
+function isLoggedIn() { return sessionStorage.getItem(SESSION_KEY) === '1'; }
+function updateAdminUI() {
+  const loginPanel = document.getElementById('loginPanel');
+  const adminPanel = document.getElementById('adminPanel');
+  const sessionUser = document.getElementById('sessionUser');
+  if (isLoggedIn()) {
+    loginPanel?.classList.add('hidden');
+    adminPanel?.classList.remove('hidden');
+    if (sessionUser) sessionUser.textContent = 'Sesión: ' + (sessionStorage.getItem('laventrix_user') || 'admin');
+    renderGarments();
+  } else {
+    loginPanel?.classList.remove('hidden');
+    adminPanel?.classList.add('hidden');
+  }
+}
+updateAdminUI();
+
+const loginForm = document.getElementById('loginForm');
+loginForm?.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const u = document.getElementById('lUser').value.trim();
+  const p = document.getElementById('lPass').value;
+  if (u === ADMIN_USER && p === ADMIN_PASS) {
+    sessionStorage.setItem(SESSION_KEY, '1');
+    sessionStorage.setItem('laventrix_user', u);
+    showToast('Sesión iniciada ✓');
+    updateAdminUI();
+  } else {
+    showToast('Credenciales incorrectas');
+  }
+});
+
+const logoutBtn = document.getElementById('logoutBtn');
+logoutBtn?.addEventListener('click', () => {
+  sessionStorage.removeItem(SESSION_KEY);
+  sessionStorage.removeItem('laventrix_user');
+  showToast('Sesión cerrada');
+  updateAdminUI();
+});
+
+// Garments storage
+function getGarments() {
+  return JSON.parse(localStorage.getItem('laventrix_garments') || '[]');
+}
+function saveGarments(list) {
+  localStorage.setItem('laventrix_garments', JSON.stringify(list));
+}
+function renderGarments() {
+  const el = document.getElementById('garmentList');
+  if (!el) return;
+  const list = getGarments();
+  if (!list.length) { el.innerHTML = '<p class="muted">No hay prendas registradas aún.</p>'; return; }
+  el.innerHTML = list.map((g, i) => `
+    <div class="card-row" style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+      <span><strong>${g.code}</strong> — ${g.state} · Casillero ${g.locker || '-'} · ${g.worker || '-'}</span>
+      <button class="btn btn-ghost btn-sm" data-del="${i}">Eliminar</button>
+    </div>
+  `).join('');
+  el.querySelectorAll('[data-del]').forEach(b => b.addEventListener('click', () => {
+    const idx = +b.getAttribute('data-del');
+    const l = getGarments(); l.splice(idx, 1); saveGarments(l); renderGarments();
+    showToast('Prenda eliminada');
+  }));
+}
+
+const garmentForm = document.getElementById('garmentForm');
+garmentForm?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  if (!isLoggedIn()) { showToast('Debes iniciar sesión'); return; }
+  const code = document.getElementById('gCode').value.trim().toUpperCase();
+  const state = document.getElementById('gState').value;
+  const locker = document.getElementById('gLocker').value.trim();
+  const worker = document.getElementById('gWorker').value.trim();
+  if (!code) { showToast('Ingresa un código'); return; }
+  const g = { code, state, locker, worker, date: new Date().toISOString() };
+  const list = getGarments();
+  list.unshift(g);
+  saveGarments(list);
+  if (API_URL) {
+    try { await fetch(API_URL, { method: 'POST', body: JSON.stringify({ type: 'garment', code, state, locker, worker, date: g.date }) }); }
+    catch (err) { console.error(err); }
+  }
+  renderGarments();
+  garmentForm.reset();
+  showToast('Prenda guardada ✓');
+});
+
 // Scroll reveal (simple)
 const observer = new IntersectionObserver((entries) => {
   entries.forEach(en => {
@@ -127,6 +219,10 @@ trackForm?.addEventListener('submit', async (e) => {
     } catch (err) { console.error(err); }
   }
   if (!g) g = demoGarments[code];
+  if (!g) {
+    const local = getGarments().find(x => x.code === code);
+    if (local) g = { state: local.state, locker: local.locker, worker: local.worker, date: local.date };
+  }
   if (!g) {
     res.innerHTML = '<p class="muted">Código no encontrado. Prueba A-0421, B-1180 o C-0903.</p>';
     res.classList.remove('hidden');

@@ -29,6 +29,7 @@
         <a href="#diferenciadores">Diferenciadores</a>
         <a href="#tracker">Seguimiento</a>
         <a href="#integracion">Base de datos</a>
+        <a href="#admin">Admin</a>
         <a href="#nosotros">Nosotros</a>
         <a href="#contacto" class="btn btn-primary btn-sm">Contacto</a>
       </nav>
@@ -308,6 +309,67 @@
       </div>
     </section>
   </main>
+
+    <!-- ADMIN / AÑADIR PRENDAS -->
+    <section class="section" id="admin">
+      <div class="container">
+        <div class="section-head">
+          <span class="eyebrow">Administración</span>
+          <h2>Añadir y gestionar prendas.</h2>
+          <p>Requiere iniciar sesión.</p>
+        </div>
+
+        <div id="loginPanel" class="card" style="max-width:420px;margin:0 auto;">
+          <h3>Iniciar sesión</h3>
+          <form id="loginForm" class="form" style="margin-top:12px;">
+            <label>Usuario
+              <input type="text" id="lUser" required placeholder="admin" />
+            </label>
+            <label>Contraseña
+              <input type="password" id="lPass" required placeholder="••••••••" />
+            </label>
+            <button type="submit" class="btn btn-primary full">Entrar</button>
+            <p class="muted small">Demo: usuario <strong>admin</strong> / contraseña <strong>laventrix123</strong></p>
+          </form>
+        </div>
+
+        <div id="adminPanel" class="hidden">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+            <span class="badge" id="sessionUser">Sesión activa</span>
+            <button id="logoutBtn" class="btn btn-ghost btn-sm">Cerrar sesión</button>
+          </div>
+
+          <div class="card" style="margin-bottom:20px;">
+            <h3>Añadir prenda</h3>
+            <form id="garmentForm" class="form" style="margin-top:12px;">
+              <label>Código
+                <input type="text" id="gCode" required placeholder="D-2045" />
+              </label>
+              <label>Estado
+                <select id="gState">
+                  <option>Retirada</option>
+                  <option>En lavado</option>
+                  <option>Limpia</option>
+                  <option>Entregada</option>
+                </select>
+              </label>
+              <label>Casillero
+                <input type="text" id="gLocker" placeholder="12" />
+              </label>
+              <label>Trabajador
+                <input type="text" id="gWorker" placeholder="Juan P." />
+              </label>
+              <button type="submit" class="btn btn-primary full">Guardar prenda</button>
+            </form>
+          </div>
+
+          <div class="card">
+            <h3>Prendas registradas</h3>
+            <div id="garmentList" style="margin-top:12px;"></div>
+          </div>
+        </div>
+      </div>
+    </section>
 
     <!-- INTEGRACION -->
     <section class="section alt" id="integracion">
