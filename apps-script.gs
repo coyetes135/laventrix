@@ -1,12 +1,7 @@
 // Google Apps Script — backend para Laventrix (guardar en Google Sheets)
-// 1) Crea una Google Sheet nueva.
-// 2) Extensiones → Apps Script → pega este código → Guardar.
-// 3) Implementar → Nueva implementación → Tipo: Aplicación web
-//    - Ejecutar como: Yo
-//    - Quién tiene acceso: Cualquiera
-//    - Copia la URL (termina en /exec) y pégala en la página (sección "Base de datos").
+// Hojas: Mensajes, Prendas, Usuarios
 
-const SHEET_ID = ''; // opcional: ID de la hoja; si vacío usa la activa
+const SHEET_ID = ''; // opcional
 
 function getSS() {
   return SHEET_ID ? SpreadsheetApp.openById(SHEET_ID) : SpreadsheetApp.getActiveSpreadsheet();
@@ -34,6 +29,26 @@ function doGet(e) {
     }
     return json({ found: false });
   }
+  if (p.action === 'login') {
+    const sh = getSheet('Usuarios', ['Usuario','Contrasena']);
+    const rows = sh.getDataRange().getValues();
+    for (let i = 1; i < rows.length; i++) {
+      if (String(rows[i][0]) === String(p.user) && String(rows[i][1]) === String(p.pass)) {
+        return json({ ok: true });
+      }
+    }
+    // fallback default admin
+    if (p.user === 'admin' && p.pass === 'laventrix123') return json({ ok: true });
+    return json({ ok: false });
+  }
+  if (p.action === 'users') {
+    const sh = getSheet('Usuarios', ['Usuario','Contrasena']);
+    const rows = sh.getDataRange().getValues();
+    const out = [];
+    for (let i = 1; i < rows.length; i++) out.push({ user: rows[i][0] });
+    if (!out.length) out.push({ user: 'admin' });
+    return json({ users: out });
+  }
   return json({ ok: true, msg: 'Laventrix API' });
 }
 
@@ -48,6 +63,23 @@ function doPost(e) {
   if (data.type === 'garment') {
     const sh = getSheet('Prendas', ['Codigo','Estado','Casillero','Trabajador','Fecha']);
     sh.appendRow([data.code, data.state, data.locker, data.worker, data.date || new Date()]);
+    return json({ ok: true });
+  }
+  if (data.type === 'user') {
+    const sh = getSheet('Usuarios', ['Usuario','Contrasena']);
+    const rows = sh.getDataRange().getValues();
+    for (let i = 1; i < rows.length; i++) {
+      if (String(rows[i][0]) === String(data.user)) return json({ ok: false, error: 'existe' });
+    }
+    sh.appendRow([data.user, data.pass]);
+    return json({ ok: true });
+  }
+  if (data.type === 'deleteUser') {
+    const sh = getSheet('Usuarios', ['Usuario','Contrasena']);
+    const rows = sh.getDataRange().getValues();
+    for (let i = rows.length - 1; i >= 1; i--) {
+      if (String(rows[i][0]) === String(data.user)) sh.deleteRow(i + 1);
+    }
     return json({ ok: true });
   }
   return json({ ok: false, error: 'tipo desconocido' });

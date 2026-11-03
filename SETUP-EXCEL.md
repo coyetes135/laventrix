@@ -17,6 +17,7 @@ Para que los datos se guarden en una hoja de cálculo compartida y funcionen en 
 A partir de ahí:
 - Los mensajes del formulario de contacto se guardan en la pestaña "Mensajes".
 - El seguimiento de prendas consulta la pestaña "Prendas".
+- El login de administradores valida contra la pestaña "Usuarios" (se crea sola). El usuario por defecto es admin / laventrix123.
 - Si no configuras la URL, se usa almacenamiento local del navegador (solo en ese dispositivo).
 
 Para agregar prendas, inserta filas en la pestaña "Prendas" con columnas: Codigo, Estado, Casillero, Trabajador, Fecha.

@@ -102,12 +102,34 @@ contactForm?.addEventListener('submit', async (e) => {
   showToast('Mensaje guardado localmente');
 });
 
-// --- Admin / login ---
-const ADMIN_USER = 'admin';
-const ADMIN_PASS = 'laventrix123';
-const SESSION_KEY = 'laventrix_session';
+// --- Admin / login (multi-usuario) ---
+const USERS_KEY = 'laventrix_users';
+const DEFAULT_USERS = [{ user: 'admin', pass: 'laventrix123' }];
+
+function getUsers() {
+  try {
+    const u = JSON.parse(localStorage.getItem(USERS_KEY));
+    if (Array.isArray(u) && u.length) return u;
+  } catch (e) {}
+  localStorage.setItem(USERS_KEY, JSON.stringify(DEFAULT_USERS));
+  return [...DEFAULT_USERS];
+}
+function saveUsers(list) { localStorage.setItem(USERS_KEY, JSON.stringify(list)); }
 
 function isLoggedIn() { return sessionStorage.getItem(SESSION_KEY) === '1'; }
+function currentUser() { return sessionStorage.getItem('laventrix_user') || ''; }
+
+async function validateLogin(user, pass) {
+  if (API_URL) {
+    try {
+      const r = await fetch(API_URL + '?action=login&user=' + encodeURIComponent(user) + '&pass=' + encodeURIComponent(pass));
+      const d = await r.json();
+      if (d && d.ok) return true;
+    } catch (e) { console.error(e); }
+  }
+  return getUsers().some(u => u.user === user && u.pass === pass);
+}
+
 function updateAdminUI() {
   const loginPanel = document.getElementById('loginPanel');
   const adminPanel = document.getElementById('adminPanel');
@@ -115,8 +137,9 @@ function updateAdminUI() {
   if (isLoggedIn()) {
     loginPanel?.classList.add('hidden');
     adminPanel?.classList.remove('hidden');
-    if (sessionUser) sessionUser.textContent = 'Sesión: ' + (sessionStorage.getItem('laventrix_user') || 'admin');
+    if (sessionUser) sessionUser.textContent = 'Sesión: ' + currentUser();
     renderGarments();
+    renderAdminUsers();
   } else {
     loginPanel?.classList.remove('hidden');
     adminPanel?.classList.add('hidden');
@@ -125,11 +148,12 @@ function updateAdminUI() {
 updateAdminUI();
 
 const loginForm = document.getElementById('loginForm');
-loginForm?.addEventListener('submit', (e) => {
+loginForm?.addEventListener('submit', async (e) => {
   e.preventDefault();
   const u = document.getElementById('lUser').value.trim();
   const p = document.getElementById('lPass').value;
-  if (u === ADMIN_USER && p === ADMIN_PASS) {
+  const ok = await validateLogin(u, p);
+  if (ok) {
     sessionStorage.setItem(SESSION_KEY, '1');
     sessionStorage.setItem('laventrix_user', u);
     showToast('Sesión iniciada ✓');
@@ -145,6 +169,53 @@ logoutBtn?.addEventListener('click', () => {
   sessionStorage.removeItem('laventrix_user');
   showToast('Sesión cerrada');
   updateAdminUI();
+});
+
+// Gestión de administradores
+function renderAdminUsers() {
+  const el = document.getElementById('adminUserList');
+  if (!el) return;
+  const list = getUsers();
+  const me = currentUser();
+  el.innerHTML = list.map((u, i) => `
+    <div class="card-row" style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+      <span><strong>${u.user}</strong>${u.user === me ? ' (tú)' : ''}</span>
+      <button class="btn btn-ghost btn-sm" data-deluser="${i}" ${list.length <= 1 ? 'disabled' : ''}>Eliminar</button>
+    </div>
+  `).join('');
+  el.querySelectorAll('[data-deluser]').forEach(b => b.addEventListener('click', async () => {
+    const idx = +b.getAttribute('data-deluser');
+    const list = getUsers();
+    const target = list[idx];
+    if (list.length <= 1) { showToast('Debe quedar al menos un administrador'); return; }
+    if (target.user === currentUser()) { showToast('No puedes eliminarte a ti mismo'); return; }
+    if (API_URL) {
+      try { await fetch(API_URL, { method: 'POST', body: JSON.stringify({ type: 'deleteUser', user: target.user }) }); } catch (e) { console.error(e); }
+    }
+    list.splice(idx, 1);
+    saveUsers(list);
+    renderAdminUsers();
+    showToast('Administrador eliminado');
+  }));
+}
+
+const adminUserForm = document.getElementById('adminUserForm');
+adminUserForm?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  if (!isLoggedIn()) { showToast('Debes iniciar sesión'); return; }
+  const u = document.getElementById('auUser').value.trim();
+  const p = document.getElementById('auPass').value;
+  if (!u || !p) { showToast('Completa los campos'); return; }
+  const list = getUsers();
+  if (list.some(x => x.user === u)) { showToast('Ese usuario ya existe'); return; }
+  list.push({ user: u, pass: p });
+  saveUsers(list);
+  if (API_URL) {
+    try { await fetch(API_URL, { method: 'POST', body: JSON.stringify({ type: 'user', user: u, pass: p }) }); } catch (e) { console.error(e); }
+  }
+  renderAdminUsers();
+  adminUserForm.reset();
+  showToast('Administrador añadido ✓');
 });
 
 // Garments storage

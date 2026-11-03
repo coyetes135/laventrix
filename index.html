@@ -381,6 +381,21 @@
             <h3>Prendas registradas</h3>
             <div id="garmentList" style="margin-top:12px;"></div>
           </div>
+
+          <div class="card" style="margin-top:20px;">
+            <h3>Administradores</h3>
+            <p class="muted small">Gestiona los usuarios que pueden iniciar sesión.</p>
+            <form id="adminUserForm" class="form" style="margin-top:12px;">
+              <label>Usuario
+                <input type="text" id="auUser" required placeholder="nuevo_admin" />
+              </label>
+              <label>Contraseña
+                <input type="password" id="auPass" required placeholder="••••••••" />
+              </label>
+              <button type="submit" class="btn btn-primary full">Añadir administrador</button>
+            </form>
+            <div id="adminUserList" style="margin-top:12px;"></div>
+          </div>
         </div>
       </div>
     </section>
