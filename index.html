@@ -28,6 +28,7 @@
         <a href="#proceso">Proceso</a>
         <a href="#diferenciadores">Diferenciadores</a>
         <a href="#tracker">Seguimiento</a>
+        <a href="#integracion">Base de datos</a>
         <a href="#nosotros">Nosotros</a>
         <a href="#contacto" class="btn btn-primary btn-sm">Contacto</a>
       </nav>
@@ -307,6 +308,26 @@
       </div>
     </section>
   </main>
+
+    <!-- INTEGRACION -->
+    <section class="section alt" id="integracion">
+      <div class="container">
+        <div class="section-head">
+          <span class="eyebrow">Base de datos</span>
+          <h2>Conecta con Google Sheets (Excel online).</h2>
+          <p>Pega la URL de tu Google Apps Script para guardar mensajes y prendas en una hoja de cálculo compartida.</p>
+        </div>
+        <div class="card" style="max-width:640px;margin:0 auto;">
+          <form id="apiForm" class="quote-form">
+            <label>URL del Apps Script
+              <input type="url" id="apiUrl" placeholder="https://script.google.com/macros/s/.../exec" />
+            </label>
+            <button type="submit" class="btn btn-primary full">Guardar conexión</button>
+          </form>
+          <p id="apiStatus" class="muted small" style="margin-top:10px;">Sin conexión configurada — se usa almacenamiento local del navegador.</p>
+        </div>
+      </div>
+    </section>
 
   <footer class="footer">
     <div class="container">
