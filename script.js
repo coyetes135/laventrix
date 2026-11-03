@@ -46,7 +46,9 @@ quoteForm?.addEventListener('submit', (e) => {
 
 // --- Integración con Google Sheets (Excel online) ---
 const API_KEY = 'laventrix_api_url';
-let API_URL = localStorage.getItem(API_KEY) || '';
+const DEFAULT_API_URL = 'https://script.google.com/macros/s/AKfycbyQMz_NY0eUEpTvnBeXgyJivZSE9PyW3XXWpL00WiDsnjf_YJn7pwS6L9HA7s0wokB-xg/exec';
+let API_URL = localStorage.getItem(API_KEY) || DEFAULT_API_URL;
+if (!localStorage.getItem(API_KEY)) localStorage.setItem(API_KEY, DEFAULT_API_URL);
 
 function apiUrl() { return API_URL; }
 function setApiStatus() {
@@ -61,6 +63,8 @@ function setApiStatus() {
   }
 }
 setApiStatus();
+const apiUrlInput = document.getElementById('apiUrl');
+if (apiUrlInput && API_URL) apiUrlInput.value = API_URL;
 
 const apiForm = document.getElementById('apiForm');
 apiForm?.addEventListener('submit', (e) => {
