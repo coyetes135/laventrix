@@ -30,12 +30,16 @@ quoteForm?.addEventListener('submit', (e) => {
   e.preventDefault();
   const workers = +document.getElementById('qWorkers').value;
   const pieces = +document.getElementById('qPieces').value;
+  const weeks = +document.getElementById('qWeeks').value;
   const plan = document.getElementById('qPlan').value;
-  if (!workers || !pieces) { showToast('Completa los campos'); return; }
-  const perPiece = plan === 'flex' ? 1800 : 1500; // CLP estimado
-  const monthlyPieces = workers * pieces * 4;
+  if (!workers || !pieces || !weeks) { showToast('Completa todos los campos'); return; }
+  const perPiece = plan === 'flex' ? 1800 : 1500; // CLP estimado por prenda
+  const weeklyPieces = workers * pieces;
+  const monthlyPieces = weeklyPieces * weeks;
   const price = monthlyPieces * perPiece;
-  document.getElementById('rPieces').textContent = monthlyPieces.toLocaleString('es-CL');
+  document.getElementById('rWeekly').textContent = weeklyPieces.toLocaleString('es-CL') + ' prendas';
+  document.getElementById('rPieces').textContent = monthlyPieces.toLocaleString('es-CL') + ' prendas';
+  document.getElementById('rUnit').textContent = '$' + perPiece.toLocaleString('es-CL') + ' CLP';
   document.getElementById('rPrice').textContent = '$' + price.toLocaleString('es-CL') + ' CLP';
   document.getElementById('quoteResult').classList.remove('hidden');
 });

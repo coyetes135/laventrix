@@ -171,33 +171,47 @@
             <li>Entrega al supervisor o al trabajador</li>
             <li>Calendario de retiro y devolución a medida</li>
           </ul>
+          <div class="note" style="margin-top:20px;">
+            <strong>Precio referencial:</strong> $1.500 CLP por prenda (Plan Lockers) · $1.800 CLP (Plan Flexible). Incluye retiro, lavado, identificación y devolución.
+          </div>
         </div>
         <div class="card-glass big">
           <h3>Simulador de cotización</h3>
-          <p class="muted">Estima el costo mensual de tu servicio.</p>
+          <p class="muted">Estima el costo mensual de tu servicio. Ajusta los valores y presiona Calcular.</p>
           <form id="quoteForm" class="quote-form">
             <label>Trabajadores con uniforme
               <input type="number" id="qWorkers" min="1" value="20" required />
+              <span class="muted small">Cantidad de colaboradores que usan uniforme.</span>
             </label>
-            <label>Prendas por trabajador/semana
+            <label>Prendas por trabajador por semana
               <input type="number" id="qPieces" min="1" value="3" required />
+              <span class="muted small">Ej: 2 pantalones + 1 chaqueta = 3.</span>
+            </label>
+            <label>Semanas de servicio al mes
+              <input type="number" id="qWeeks" min="1" max="5" value="4" required />
             </label>
             <label>Plan
               <select id="qPlan">
-                <option value="lockers">Lockers en empresa</option>
-                <option value="flex">Plan Flexible (bolsas)</option>
+                <option value="lockers">Lockers en empresa ($1.500/prenda)</option>
+                <option value="flex">Plan Flexible, bolsas ($1.800/prenda)</option>
               </select>
             </label>
-            <button type="submit" class="btn btn-primary full">Calcular</button>
+            <button type="submit" class="btn btn-primary full">Calcular cotización</button>
           </form>
           <div id="quoteResult" class="quote-result hidden">
-            <div class="result-row"><span>Prendas/mes</span><strong id="rPieces">—</strong></div>
-            <div class="result-row"><span>Precio estimado</span><strong id="rPrice">—</strong></div>
-            <p class="muted small">Estimación referencial. Cotización final a medida.</p>
+            <div class="result-row"><span>Prendas por semana</span><strong id="rWeekly">—</strong></div>
+            <div class="result-row"><span>Prendas por mes</span><strong id="rPieces">—</strong></div>
+            <div class="result-row"><span>Precio por prenda</span><strong id="rUnit">—</strong></div>
+            <div class="result-row" style="border-top:1px solid var(--card-border);padding-top:10px;margin-top:6px;">
+              <span><strong>Total mensual estimado</strong></span>
+              <strong id="rPrice" style="font-size:18px;">—</strong>
+            </div>
+            <p class="muted small">Estimación referencial. La cotización final se ajusta a tu empresa (volumen, frecuencia y tipo de prenda).</p>
           </div>
         </div>
       </div>
     </section>
+
 
     <!-- DIFERENCIADORES -->
     <section class="section" id="diferenciadores">
