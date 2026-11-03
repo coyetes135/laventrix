@@ -46,8 +46,11 @@ quoteForm?.addEventListener('submit', (e) => {
 
 // --- Integración con Google Sheets (Excel online) ---
 const API_KEY = 'laventrix_api_url';
-const DEFAULT_API_URL = 'https://script.google.com/macros/s/AKfycbyQMz_NY0eUEpTvnBeXgyJivZSE9PyW3XXWpL00WiDsnjf_YJn7pwS6L9HA7s0wokB-xg/exec';
-let API_URL = localStorage.getItem(API_KEY) || DEFAULT_API_URL;
+const DEFAULT_API_URL = 'https://script.google.com/macros/s/AKfycbx1AM_U30E2Svq9QxJEi3x7yT1ZTwFbO70MXbexqSX9SU48hP4wfJqIFrXjBjzi0wnSrw/exec';
+const OLD_API_URL = 'https://script.google.com/macros/s/AKfycbyQMz_NY0eUEpTvnBeXgyJivZSE9PyW3XXWpL00WiDsnjf_YJn7pwS6L9HA7s0wokB-xg/exec';
+let stored = localStorage.getItem(API_KEY);
+if (stored === OLD_API_URL) { stored = DEFAULT_API_URL; localStorage.setItem(API_KEY, DEFAULT_API_URL); }
+let API_URL = stored || DEFAULT_API_URL;
 if (!localStorage.getItem(API_KEY)) localStorage.setItem(API_KEY, DEFAULT_API_URL);
 
 function apiUrl() { return API_URL; }
