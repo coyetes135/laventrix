@@ -110,6 +110,7 @@ contactForm?.addEventListener('submit', async (e) => {
 });
 
 // --- Admin / login (multi-usuario) ---
+const SESSION_KEY = 'laventrix_session';
 const USERS_KEY = 'laventrix_users';
 const DEFAULT_USERS = [{ user: 'admin', pass: 'laventrix123' }];
 
