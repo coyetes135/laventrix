@@ -437,6 +437,16 @@ checkWorkerHash();
 
 renderWorkers();
 
+// Evitar envío automático de formularios (Enter / autocompletado)
+document.querySelectorAll('form').forEach(f => {
+  f.setAttribute('autocomplete', 'off');
+  f.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && e.target && e.target.tagName !== 'TEXTAREA') {
+      e.preventDefault();
+    }
+  });
+});
+
 // Scroll reveal (simple)
 const observer = new IntersectionObserver((entries) => {
   entries.forEach(en => {
