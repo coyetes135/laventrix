@@ -171,6 +171,7 @@ body {
   box-shadow: var(--shadow); z-index: 100; font-weight: 600;
 }
 .toast.hidden { display: none; }
+#workerCardModal:not(.hidden) { display: flex; align-items: center; justify-content: center; }
 
 /* RESPONSIVE */
 @media (max-width: 900px) {
