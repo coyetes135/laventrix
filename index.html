@@ -32,6 +32,7 @@
         <a href="#tracker">Seguimiento</a>
         <a href="#integracion">Base de datos</a>
         <a href="#admin">Admin</a>
+        <a href="#qr">QR Trabajadores</a>
         <a href="#nosotros">Nosotros</a>
         <a href="#contacto" class="btn btn-primary btn-sm">Contacto</a>
       </nav>
@@ -422,6 +423,73 @@
       </div>
     </section>
 
+    <!-- QR GENERADOR -->
+    <section class="section" id="qr">
+      <div class="container">
+        <div class="section-head">
+          <span class="eyebrow">Generador de QR</span>
+          <h2>Crea QR para trabajadores.</h2>
+          <p>Ingresa los datos del trabajador y genera un código QR con su información.</p>
+        </div>
+        <div class="flex-grid">
+          <div class="card">
+            <h3>Datos del trabajador</h3>
+            <form id="workerForm" class="form" style="margin-top:12px;">
+              <label>Nombre completo
+                <input type="text" id="wName" required placeholder="Juan Pérez" />
+              </label>
+              <label>Fecha de ingreso
+                <input type="date" id="wDate" required />
+              </label>
+              <label>Empresa
+                <input type="text" id="wCompany" required placeholder="Empresa ABC" />
+              </label>
+              <label>Código de prenda (opcional)
+                <input type="text" id="wCode" placeholder="A-0421" />
+              </label>
+              <label>Casillero (opcional)
+                <input type="text" id="wLocker" placeholder="12" />
+              </label>
+              <button type="submit" class="btn btn-primary full">Generar QR</button>
+            </form>
+          </div>
+          <div class="card" id="qrPreviewCard" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:320px;">
+            <div id="qrEmpty" class="muted">El código QR aparecerá aquí.</div>
+            <div id="qrBox" class="hidden" style="text-align:center;">
+              <div id="qrcode" style="display:inline-block;padding:12px;background:#fff;border-radius:12px;"></div>
+              <div id="qrData" style="margin-top:14px;font-size:14px;color:var(--muted);"></div>
+              <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;justify-content:center;">
+                <button id="qrDownload" class="btn btn-primary btn-sm">Descargar PNG</button>
+                <button id="qrPrint" class="btn btn-ghost btn-sm">Imprimir</button>
+                <button id="qrNew" class="btn btn-ghost btn-sm">Nuevo</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:24px;">
+          <h3>Trabajadores con QR generado</h3>
+          <div id="workerList" style="margin-top:12px;"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Modal tarjeta trabajador -->
+    <div id="workerCardModal" class="hidden" style="position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:100;display:flex;align-items:center;justify-content:center;padding:20px;">
+      <div class="card" style="max-width:420px;width:100%;text-align:center;position:relative;">
+        <button id="closeCardModal" style="position:absolute;top:10px;right:14px;background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;">✕</button>
+        <div style="width:64px;height:64px;margin:0 auto 12px;border-radius:50%;background:var(--grad);display:grid;place-items:center;font-size:28px;font-weight:800;">W</div>
+        <h2 id="cardName" style="margin-bottom:4px;"></h2>
+        <p id="cardCompany" class="muted" style="margin-bottom:16px;"></p>
+        <div style="display:grid;gap:8px;text-align:left;font-size:14px;">
+          <div class="card-row"><span class="muted">Fecha de ingreso:</span> <strong id="cardDate"></strong></div>
+          <div class="card-row"><span class="muted">Código de prenda:</span> <strong id="cardCode"></strong></div>
+          <div class="card-row"><span class="muted">Casillero:</span> <strong id="cardLocker"></strong></div>
+        </div>
+        <p class="muted small" style="margin-top:16px;">Laventrix · Servicio de Lavandería Industrial B2B</p>
+      </div>
+    </div>
+
   <footer class="footer">
     <div class="container">
       <p>© 2026 Laventrix — Servicio de Lavandería Industrial B2B. Todos los derechos reservados.</p>
@@ -430,6 +498,7 @@
 
   <div id="toast" class="toast hidden"></div>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="script.js"></script>
 </body>
 </html>

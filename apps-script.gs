@@ -65,6 +65,11 @@ function doPost(e) {
     sh.appendRow([data.code, data.state, data.locker, data.worker, data.date || new Date()]);
     return json({ ok: true });
   }
+  if (data.type === 'worker') {
+    const sh = getSheet('Trabajadores', ['Nombre','FechaIngreso','Empresa','CodigoPrenda','Casillero','Creado']);
+    sh.appendRow([data.name, data.date, data.company, data.code, data.locker, data.createdAt || new Date()]);
+    return json({ ok: true });
+  }
   if (data.type === 'user') {
     const sh = getSheet('Usuarios', ['Usuario','Contrasena']);
     const rows = sh.getDataRange().getValues();

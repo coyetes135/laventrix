@@ -273,6 +273,167 @@ garmentForm?.addEventListener('submit', async (e) => {
   showToast('Prenda guardada ✓');
 });
 
+// --- Generador de QR para trabajadores ---
+const WORKERS_KEY = 'laventrix_workers';
+function getWorkers() { return JSON.parse(localStorage.getItem(WORKERS_KEY) || '[]'); }
+function saveWorkers(list) { localStorage.setItem(WORKERS_KEY, JSON.stringify(list)); }
+
+let currentWorker = null;
+let currentQrCanvas = null;
+
+function encodeWorker(w) { return btoa(unescape(encodeURIComponent(JSON.stringify(w)))); }
+function decodeWorker(str) { return JSON.parse(decodeURIComponent(escape(atob(str)))); }
+
+function workerCardUrl(w) {
+  return location.origin + location.pathname + '#worker=' + encodeWorker(w);
+}
+
+function generateQR(w) {
+  const box = document.getElementById('qrBox');
+  const empty = document.getElementById('qrEmpty');
+  const qrcodeEl = document.getElementById('qrcode');
+  qrcodeEl.innerHTML = '';
+  currentWorker = w;
+  const url = workerCardUrl(w);
+  new QRCode(qrcodeEl, { text: url, width: 200, height: 200, colorDark: '#1e1b4b', colorLight: '#ffffff' });
+  setTimeout(() => {
+    currentQrCanvas = qrcodeEl.querySelector('canvas');
+    if (!currentQrCanvas) {
+      const img = qrcodeEl.querySelector('img');
+      if (img) {
+        const c = document.createElement('canvas');
+        c.width = img.width; c.height = img.height;
+        c.getContext('2d').drawImage(img, 0, 0);
+        currentQrCanvas = c;
+      }
+    }
+  }, 100);
+  document.getElementById('qrData').textContent = w.name + ' · ' + w.company + ' · ' + w.date;
+  empty.classList.add('hidden');
+  box.classList.remove('hidden');
+}
+
+function renderWorkers() {
+  const el = document.getElementById('workerList');
+  if (!el) return;
+  const list = getWorkers();
+  if (!list.length) { el.innerHTML = '<p class="muted">No hay trabajadores con QR aún.</p>'; return; }
+  el.innerHTML = list.map((w, i) => `
+    <div class="card-row" style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;">
+      <span><strong>${w.name}</strong> — ${w.company} · ${w.date}${w.code ? ' · ' + w.code : ''}</span>
+      <span style="display:flex;gap:6px;">
+        <button class="btn btn-ghost btn-sm" data-view="${i}">Ver QR</button>
+        <button class="btn btn-ghost btn-sm" data-delw="${i}">Eliminar</button>
+      </span>
+    </div>
+  `).join('');
+  el.querySelectorAll('[data-view]').forEach(b => b.addEventListener('click', () => {
+    const idx = +b.getAttribute('data-view');
+    generateQR(getWorkers()[idx]);
+    document.getElementById('qr').scrollIntoView({ behavior: 'smooth' });
+  }));
+  el.querySelectorAll('[data-delw]').forEach(b => b.addEventListener('click', () => {
+    const idx = +b.getAttribute('data-delw');
+    const l = getWorkers(); l.splice(idx, 1); saveWorkers(l); renderWorkers();
+    showToast('Trabajador eliminado');
+  }));
+}
+
+const workerForm = document.getElementById('workerForm');
+workerForm?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const w = {
+    id: Date.now(),
+    name: document.getElementById('wName').value.trim(),
+    date: document.getElementById('wDate').value,
+    company: document.getElementById('wCompany').value.trim(),
+    code: document.getElementById('wCode').value.trim().toUpperCase(),
+    locker: document.getElementById('wLocker').value.trim(),
+    createdAt: new Date().toISOString()
+  };
+  if (!w.name || !w.date || !w.company) { showToast('Completa los campos obligatorios'); return; }
+  const list = getWorkers();
+  list.unshift(w);
+  saveWorkers(list);
+  if (API_URL) {
+    try { await fetch(API_URL, { method: 'POST', body: JSON.stringify({ type: 'worker', name: w.name, date: w.date, company: w.company, code: w.code, locker: w.locker, createdAt: w.createdAt }) }); }
+    catch (err) { console.error(err); }
+  }
+  renderWorkers();
+  generateQR(w);
+  workerForm.reset();
+  showToast('QR generado ✓');
+});
+
+document.getElementById('qrDownload')?.addEventListener('click', () => {
+  if (!currentQrCanvas) { showToast('Genera un QR primero'); return; }
+  const a = document.createElement('a');
+  a.href = currentQrCanvas.toDataURL('image/png');
+  a.download = 'qr-' + (currentWorker ? currentWorker.name.replace(/\s+/g,'-') : 'trabajador') + '.png';
+  a.click();
+});
+
+document.getElementById('qrPrint')?.addEventListener('click', () => {
+  if (!currentWorker || !currentQrCanvas) { showToast('Genera un QR primero'); return; }
+  const img = currentQrCanvas.toDataURL('image/png');
+  const w = window.open('', '_blank');
+  w.document.write(`
+    <html><head><title>QR Trabajador</title>
+    <style>body{font-family:Inter,Arial,sans-serif;text-align:center;padding:40px;color:#111}h1{margin:0 0 4px}p{margin:2px 0;color:#555}.card{border:1px solid #ddd;border-radius:16px;padding:24px;display:inline-block}img{margin:16px 0}</style>
+    </head><body>
+    <div class="card">
+      <h1>${currentWorker.name}</h1>
+      <p>${currentWorker.company}</p>
+      <img src="${img}" width="220" height="220" />
+      <p><strong>Fecha de ingreso:</strong> ${currentWorker.date}</p>
+      ${currentWorker.code ? `<p><strong>Código de prenda:</strong> ${currentWorker.code}</p>` : ''}
+      ${currentWorker.locker ? `<p><strong>Casillero:</strong> ${currentWorker.locker}</p>` : ''}
+      <p style="margin-top:12px;font-size:12px;color:#999;">Laventrix · Servicio de Lavandería Industrial B2B</p>
+    </div>
+    <script>window.onload=function(){window.print();}</script>
+    </body></html>
+  `);
+  w.document.close();
+});
+
+document.getElementById('qrNew')?.addEventListener('click', () => {
+  document.getElementById('qrBox').classList.add('hidden');
+  document.getElementById('qrEmpty').classList.remove('hidden');
+  currentWorker = null;
+  currentQrCanvas = null;
+});
+
+// Vista de tarjeta al abrir un QR
+function showWorkerCard(w) {
+  document.getElementById('cardName').textContent = w.name || '—';
+  document.getElementById('cardCompany').textContent = w.company || '';
+  document.getElementById('cardDate').textContent = w.date || '—';
+  document.getElementById('cardCode').textContent = w.code || '—';
+  document.getElementById('cardLocker').textContent = w.locker || '—';
+  document.getElementById('workerCardModal').classList.remove('hidden');
+}
+document.getElementById('closeCardModal')?.addEventListener('click', () => {
+  document.getElementById('workerCardModal').classList.add('hidden');
+  if (location.hash.startsWith('#worker=')) history.replaceState(null, '', location.pathname);
+});
+document.getElementById('workerCardModal')?.addEventListener('click', (e) => {
+  if (e.target.id === 'workerCardModal') {
+    document.getElementById('workerCardModal').classList.add('hidden');
+    if (location.hash.startsWith('#worker=')) history.replaceState(null, '', location.pathname);
+  }
+});
+
+function checkWorkerHash() {
+  const hash = location.hash;
+  if (hash.startsWith('#worker=')) {
+    try { showWorkerCard(decodeWorker(hash.slice(8))); } catch (e) { console.error(e); }
+  }
+}
+window.addEventListener('hashchange', checkWorkerHash);
+checkWorkerHash();
+
+renderWorkers();
+
 // Scroll reveal (simple)
 const observer = new IntersectionObserver((entries) => {
   entries.forEach(en => {
